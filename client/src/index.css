@@ -1,0 +1,23 @@
+@import "tailwindcss";
+
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans:ital,wght@0,100..900;1,100..900&family=Outfit:wght@100..900&family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Prata&family=Roboto+Condensed:ital,wght@0,100..900;1,100..900&display=swap');
+
+body{
+    font-family: "Roboto Condensed", sans-serif;
+}
+button{
+    cursor: pointer;
+}
+.bg-image{
+    background-image: url("assets/heroImage.png");
+    height: 100vh;
+}
+.active{
+    text-decoration: underline;
+}
+hr{
+    color: rgb(175, 173, 173);
+}
+h2{
+    font-family: Outfit;
+}
