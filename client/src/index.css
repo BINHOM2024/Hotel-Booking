@@ -15,9 +15,11 @@ button{
 .active{
     text-decoration: underline;
 }
+
 hr{
     color: rgb(175, 173, 173);
 }
 h2{
     font-family: Outfit;
 }
+

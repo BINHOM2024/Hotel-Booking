@@ -3,8 +3,8 @@ import { assets } from "../assets/assets";
 const Footer = () => {
   return (
     <div className="bg-gray-300 text-gray-500">
-      <div className="w-[80%] m-auto">
-        <div className="grid grid-cols-[2fr_1fr_1fr_1fr]  gap-8 py-6">
+      <div className="w-[90%] m-auto">
+        <div className="grid grid-cols-2 sm:grid-cols-[2fr_1fr_1fr_1fr]  gap-8 py-6">
           <div>
             <img src={assets.logo} />
             <p className=" my-4">
@@ -49,7 +49,7 @@ const Footer = () => {
                 <input
                   type="email"
                   placeholder="your email"
-                  className="py-1 pl-2 bg-gray-400 outline-0 rounded-l-[5px]"
+                  className="py-1 pl-2 bg-gray-400 outline-0 rounded-l-[5px] w-[90%]"
                 />
                 <img
                   src={assets.arrowIcon}
@@ -60,7 +60,7 @@ const Footer = () => {
           </div>
         </div>
         <hr />
-        <div className="flex justify-between py-6">
+        <div className="flex flex-col gap-6 sm:flex-row sm:gap-0 sm:justify-between py-6">
           <p>© 2025 QuickStay. All rights reserved.</p>
           <div className="flex gap-4 ">
             <p>Privacy</p>
