@@ -1,4 +1,4 @@
-import React from "react";
+
 import { assets } from "../assets/assets";
 const Footer = () => {
   return (
@@ -6,7 +6,7 @@ const Footer = () => {
       <div className="w-[90%] m-auto">
         <div className="grid grid-cols-2 sm:grid-cols-[2fr_1fr_1fr_1fr]  gap-8 py-6">
           <div>
-            <img src={assets.logo} />
+            <img src={assets.logo} className="invert" />
             <p className=" my-4">
               Discover the world's most extraordinary places to stay, from
               boutique hotels to luxury villas and private islands.

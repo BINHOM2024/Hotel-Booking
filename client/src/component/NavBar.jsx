@@ -1,25 +1,188 @@
-import React from 'react'
-import logo from '../assets/logo.svg'
-import searchIcon from '../assets/searchIcon.svg'
-import {NavLink}  from "react-router-dom"
-function NavBar() {
-    return (
-        <div className='flex justify-between items-center pt-8 w-[80%] m-auto text-white'>
-      <img src={logo} />
-            <div className='flex gap-8 text-[20px]'>
-                <NavLink to="/">Home</NavLink>
-                <NavLink to="/hotels">Hotels</NavLink>
-                <NavLink to="/about">About</NavLink>
-                <NavLink to="/experience">Experience</NavLink>
-                <button>List Your Hotel</button>
-            </div>
-            <div className='flex gap-4'>
-                <img src={searchIcon} className='w-8 cursor-pointer'/>
-                <button className='border-2 px-3 rounded-[10px]'>Login</button>
-            </div>
-        </div>
-   
-  )
-}
+import React, { useEffect, useState } from "react";
+import { assets } from "../assets/assets";
+import { Link, useNavigate,useLocation } from "react-router-dom";
+import { useClerk, useUser, UserButton } from "@clerk/clerk-react";
 
-export default NavBar
+const BookIcon = () => (
+  <svg
+    className="w-4 h-4 text-gray-700"
+    aria-hidden="true"
+    xmlns="http://www.w3.org/2000/svg"
+    width="24"
+    height="24"
+    fill="none"
+    viewBox="0 0 24 24"
+  >
+    <path
+      stroke="currentColor"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth="2"
+      d="M5 19V4a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v13H7a2 2 0 0 0-2 2Zm0 0a2 2 0 0 0 2 2h12M9 3v14m7 0v4"
+    />
+  </svg>
+);
+const NavBar = () => {
+  const navigaiteTo = useNavigate();
+  const location = useLocation();
+  const navLinks = [
+    { name: "Home", path: "/" },
+    { name: "Hotel", path: "/hotels" },
+    { name: "Experience", path: "/experience" },
+    { name: "About", path: "/about" },
+  ];
+
+  const [isScrolled, setIsScrolled] =useState(false);
+  const [isMenuOpen, setIsMenuOpen] =useState(false);
+  const { openSignIn } = useClerk();
+  const { user } = useUser();
+
+  useEffect(() => {    
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 10);
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  return (
+    <nav
+      className={`fixed top-0 left-0  w-full flex items-center justify-between px-4 md:px-16 lg:px-24 xl:px-32 transition-all duration-500 z-50 ${
+        isScrolled
+          ? "bg-white/80 shadow-md text-gray-700 backdrop-blur-lg py-3 md:py-4"
+          : `py-4 md:py-6 ${location.pathname !== "/" && "shadow-md"}`
+      }`}
+    >
+      <Link to="/">
+        <img
+          src={assets.logo}
+          alt="logo"
+          className={`h-9 ${
+            isScrolled
+              ? "invert opacity-80"
+              : `${location.pathname !== "/" && "invert opacity-70"}`
+          }`}
+        />
+      </Link>
+      <div className="hidden md:flex items-center gap-4 lg:gap-8">
+        {navLinks.map((link, i) => (
+          <Link
+            key={i}
+            to={link.path}
+            className={`group flex flex-col gap-0.5 ${
+              isScrolled
+                ? "text-gray-700"
+                : ` ${
+                    location.pathname !== "/" ? "text-gray-700" : "text-white"
+                  }`
+            }`}
+          >
+            {link.name}
+          </Link>
+        ))}
+        <button
+          onClick={() => navigaiteTo("/owner")}
+          className={`border px-4 py-1 text-sm font-light rounded-full cursor-pointer ${
+            isScrolled
+              ? "text-black"
+              : ` ${location.pathname !== "/" ? "text-gray-700" : "text-white"}`
+          } transition-all`}
+        >
+          Dashboard
+        </button>
+      </div>
+
+      {/* Desktop Right */}
+      <div className="hidden md:flex items-center gap-4">
+        <img
+          src={assets.searchIcon}
+          alt="serch"
+          className={`${
+            isScrolled
+              ? "invert opacity-70"
+              : `${location.pathname !== "/" && "invert opacity-70"}`
+          } w-10 transition-all duration-500`}
+        />
+        {user ? (
+          <UserButton>
+            <UserButton.MenuItems>
+              <UserButton.Action
+                label="My bookings"
+                labelIcon={<BookIcon />}
+                onClick={() => navigaiteTo("/my-bookings")}
+              />
+            </UserButton.MenuItems>
+          </UserButton>
+        ) : (
+          <button
+            onClick={openSignIn}
+            className="bg-black text-white px-8 py-2.5 rounded-full ml-4 transition-all duration-500"
+          >
+            Login
+          </button>
+        )}
+      </div>
+
+      {/* Mobile Menu Button */}
+
+      <div className="flex items-center gap-3 md:hidden">
+        {user && (
+          <UserButton>
+            <UserButton.MenuItems>
+              <UserButton.Action
+                label="My bookings"
+                labelIcon={<BookIcon />}
+                onClick={() => navigaiteTo("/my-bookings")}
+              />
+            </UserButton.MenuItems>
+          </UserButton>
+        )}
+        <img
+          onClick={() => setIsMenuOpen(!isMenuOpen)}
+          src={assets.menuIcon}
+          alt="menuIcon"
+          className={`${isScrolled ? "invert":`${location.pathname !== "/" && "invert opacity-70"}`} h-4 cursor-pointer`}
+        />
+      </div>
+
+      {/* Mobile Menu */}
+      <div
+        className={`fixed top-0 left-0 w-full h-screen bg-white text-base flex flex-col md:hidden items-center justify-center gap-6 font-medium text-gray-800 transition-all duration-500 ${
+          isMenuOpen ? "translate-x-0" : "-translate-x-full"
+        }`}
+      >
+        <button
+          className="absolute top-4 right-4"
+          onClick={() => setIsMenuOpen(false)}
+        >
+          <img src={assets.closeMenu} alt="close menu" className="h-4" />
+        </button>
+
+        {navLinks.map((link, i) => (
+          <a key={i} href={link.path} onClick={() => setIsMenuOpen(false)}>
+            {link.name}
+          </a>
+        ))}
+        {user && (
+          <button
+            onClick={() => navigaiteTo("/owner")}
+            className="border px-4 py-1 text-sm font-light rounded-full cursor-pointer transition-all"
+          >
+            Dashboard
+          </button>
+        )}
+
+        {!user && (
+          <button
+            onClick={openSignIn}
+            className="bg-black text-white px-8 py-2.5 rounded-full transition-all duration-500"
+          >
+            Login
+          </button>
+        )}
+      </div>
+    </nav>
+  );
+};
+
+export default NavBar;

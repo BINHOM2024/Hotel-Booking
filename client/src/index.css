@@ -8,10 +8,7 @@ body{
 button{
     cursor: pointer;
 }
-.bg-image{
-    background-image: url("assets/heroImage.png");
-    height: 100vh;
-}
+
 .active{
     text-decoration: underline;
 }
