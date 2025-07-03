@@ -1,14 +1,42 @@
-import { useState } from "react";
-import { assets, dashboardDummyData } from "../../assets/assets";
+import { useEffect, useState } from "react";
+import { assets } from "../../assets/assets";
+import { useContextCreator } from "../../context/StoreContext";
 
 const Dashboard = () => {
-  const [dashboard, setDashboard] = useState(dashboardDummyData);
+  const [dashboard, setDashboard] = useState({
+    totalBookings: 0,
+    totalRevenue: 0,
+    bookings:[]
+  });
+  const { axios, user, getToken,toast } =useContextCreator()
   const bookingDatails = [
     "User Name",
     "Room Name",
     "Total Amount",
     "Payment Status",
   ];
+  const getDashboardData = async () => {
+    try {
+      const { data } = await axios.get("/api/bookings/hotel", {
+        headers: { Authorization: `Bearer ${await getToken()}` },
+      });
+      if (data.success) {
+        setDashboard(data.dashboardData);
+      } else {
+        toast.error(data.message)
+      }
+    } catch (error) {
+      toast.error(error.message)
+    }
+  }
+
+useEffect(() => {
+  if (user) {
+   getDashboardData()
+ }
+}, [user])
+
+
   return (
     <div className="px-2 sm:px-0">
       <h1 className="text-3xl mb-3">Dashboard</h1>

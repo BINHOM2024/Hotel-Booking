@@ -1,24 +1,77 @@
 import React, { useState } from "react";
 import { assets } from "../../assets/assets";
+import { useContextCreator } from "../../context/StoreContext";
 
 const AddRoom = () => {
+  const { axios, getToken,toast } = useContextCreator();
+  const [loading, setLoading] = useState(false)
   const [Images, setImages] = useState({
     1: null,
     2: null,
     3: null,
-    4: null,
+    4: null
   });
   const [inputs, setInputs] = useState({
     pricePerNight: 0,
     roomType: "",
-    amneties: {
+    amenities: {
       "Free WiFi": false,
       "Free Breakfast": false,
       "Room Service": false,
       "Mountain View": false,
-      "Pool Access": false,
+      "Pool Access": false
     },
   });
+
+  const onSubmitHandler = async () => {
+    if (
+      !inputs.roomType ||
+      !inputs.pricePerNight ||
+      !inputs.amenities ||
+      !Object.keys(Images).some((image) => image)
+    ) {
+      toast.error("fill out all the fields please");
+      return;
+    }
+    setLoading(true)
+    try {
+      const formData = new FormData();
+      Object.keys(Images).forEach(
+        (key) => Images[key] && formData.append("images", Images[key])
+      );
+      formData.append("roomType", inputs.roomType);
+      formData.append("pricePerNight", inputs.pricePerNight);
+      const amenity = Object.keys(inputs.amenities).filter(
+        (key) => inputs.amenities[key]
+      );
+      formData.append("amenities", JSON.stringify(amenity));
+      const { data } = await axios.post("/api/rooms", formData, {
+       headers : { Authorization: `Bearer ${await getToken()}` },
+      });
+      if (data.success) {
+        toast.success(data.message);
+        setImages({ 1: null, 2: null, 3: null, 4: null });
+        setInputs({
+          roomType: "",
+          pricePerNight: "",
+          amenities: {
+            "Free WiFi": false,
+            "Free Breakfast": false,
+            "Room Service": false,
+            "Mountain View": false,
+            "Pool Access": false,
+          },
+        });
+      } else {
+        toast.error(data.message)
+      }
+    } catch (error) {
+      toast.error(error.message)
+    } finally {
+      setLoading(false)
+    }
+  };
+
   return (
     <div className="px-2 sm:px-0">
       <h1 className="text-3xl mb-3">Add Room</h1>
@@ -62,8 +115,8 @@ const AddRoom = () => {
             onChange={(e) => setInputs({ ...inputs, roomType: e.target.value })}
           >
             <option value="">Select Room Type</option>
-            <option value="DoubleRoom">Double Room</option>
-            <option value="SingleRoom">Single Room</option>
+            <option value="Double Bed">Double Room</option>
+            <option value="Single Bed">Single Room</option>
           </select>
         </div>
         <label htmlFor="price" className="inline-flex flex-col">
@@ -81,19 +134,19 @@ const AddRoom = () => {
       </div>
       <div>
         <p className="mt-4 pb-1 text-gray-900">Amenities</p>
-        {Object.keys(inputs.amneties).map((amenty, i) => (
+        {Object.keys(inputs.amenities).map((amenty, i) => (
           <label htmlFor={amenty} key={i} className="flex gap-2 text-gray-500">
             <input
               type="checkbox"
               id={amenty}
               className="cursor-pointer"
-              checked={inputs.amneties[amenty]}
+              checked={inputs.amenities[amenty]}
               onChange={(e) =>
                 setInputs({
                   ...inputs,
-                  amneties: {
-                    ...inputs.amneties,
-                    [amenty]: !inputs.amneties[amenty],
+                  amenities: {
+                    ...inputs.amenities,
+                    [amenty]: !inputs.amenities[amenty],
                   },
                 })
               }
@@ -102,8 +155,12 @@ const AddRoom = () => {
           </label>
         ))}
       </div>
-      <button className="my-4 p-2 text-white rounded bg-blue-600">
-        Add Room
+      <button
+       disabled={loading}
+        className="my-4 p-2 text-white rounded bg-blue-600"
+        onClick={onSubmitHandler}
+      >
+       {loading? "Loading...":"Add Room"} 
       </button>
     </div>
   );

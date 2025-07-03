@@ -1,12 +1,31 @@
-import { useState, useEffect } from "react";
-import { assets, facilityIcons, roomsDummyData } from "../assets/assets";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect, useMemo } from "react";
+import { assets, facilityIcons } from "../assets/assets";
+import { useContextCreator } from "../context/StoreContext";
+import { useSearchParams } from "react-router-dom";
 
 function Hotels() {
   const [Show, setShow] = useState(false);
+  const [searchParams,setSearchParams]=useSearchParams()
   const [size, setSize] = useState(false);
-  const navigaiteTo = useNavigate();
+  const [selectedFilters, setSelectedFilters] = useState({
+    roomType: [],
+    priceRange: []
+  });
+  const [selectedSort, setSelectedSort] = useState("")
+  const {navigateTo,rooms,setRooms}=useContextCreator()
 
+  const roomTypes = ["Single Bed", "Double Bed", "Luxury Room", "Family Suite"];
+  const priceRange = [
+    "0 to 500",
+    "500 to 1000",
+    "1000 to 2000",
+    "2000 to 3000",
+  ];
+  const priceCategory = [
+    "Price Low to High",
+    "Price High to Low",
+    "Newest First",
+  ];
   const stars = [
     assets.starIconFilled,
     assets.starIconFilled,
@@ -14,6 +33,7 @@ function Hotels() {
     assets.starIconFilled,
     assets.starIconOutlined,
   ];
+
   useEffect(() => {
     if (window.innerWidth <= 1023) {
       setSize(true);
@@ -28,6 +48,72 @@ function Hotels() {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
+  const handleFilterChange = (checked, room, type) => {
+    setSelectedFilters((prevFilters) => {
+      const updatedFilters = { ...prevFilters };
+      const currentArray = prevFilters[type] || [];
+      if (checked) {
+        updatedFilters[type] = [...currentArray, room]; 
+      } else {
+        updatedFilters[type] = currentArray.filter((item) => item !== room);
+      }
+      return updatedFilters;
+    });
+  };
+  const handleSortChange = (sortOptions) => {
+    setSelectedSort(sortOptions);
+  };
+
+  const matchesRoomType = (room) => {
+    return selectedFilters.roomType.length===0||selectedFilters.roomType.includes(room.roomType)
+  }
+
+  const matchesPriceRange = (room) => {
+    return (
+      selectedFilters.priceRange.length === 0 ||
+      selectedFilters.priceRange.some(range => {
+        const [min, max] = range.split(" to ").map(Number)
+        return room.pricePerNight >= min && room.pricePerNight <= max;
+      }))
+  };
+
+  const sortRooms = (a, b) => {
+    if (!selectedSort) return
+    if (selectedSort === "Price Low to High") {
+      return a.pricePerNight - b.pricePerNight;
+    }
+    if (selectedSort === "Price High to Low") {
+      return b.pricePerNight - a.pricePerNight;
+    }
+    if (selectedSort === "Newest First") {
+      return new Date(b.createdAt) - new Date(a.createdAt);
+    }
+    return 0;
+  };
+  
+
+  const filterDestination = (room) => {
+    const destination = searchParams.get("destination")
+    if (!destination) return true
+    return room.hotel.city.toLowerCase().includes(destination.toLocaleLowerCase())
+  }
+
+  const filteredRooms = useMemo(() => {
+    return rooms.filter(
+      (room) =>
+        matchesRoomType(room) &&
+        matchesPriceRange(room) &&
+        filterDestination(room)).sort(sortRooms)
+  }, [rooms, selectedFilters, searchParams, selectedSort]);
+  
+  const clearFilter = () => {
+    setSelectedFilters({
+      roomType: [],
+      priceRange: []
+    });
+    setSelectedSort("")
+    setSearchParams({})
+}
   return (
     <div className="mt-36 m-auto w-[90%] flex flex-col-reverse lg:flex-row justify-between gap-12 ">
       <div>
@@ -36,14 +122,19 @@ function Hotels() {
           Take advantage of our limited-time offers and special packages to
           enhance your stay and create unforgettable memories.
         </p>
-        {roomsDummyData.map((room, i) => (
-          <div className="gap-9 flex flex-col lg:flex-row my-12 " key={i}>
+        {filteredRooms.map((room, i) => (
+          <div
+            className={`gap-9 flex flex-col lg:flex-row my-12 border-b border-gray-300 pb-8 ${
+              i === filteredRooms.length - 1 ? "border-b-0" : ""
+            }`}
+            key={room._id}
+          >
             <img
               onClick={() => {
-                navigaiteTo(`/hotels/${room._id}`);
+                navigateTo(`/rooms/${room._id}`);
                 scrollTo(0, 0);
               }}
-              className="md:w-[500px] cursor-pointer rounded-2xl"
+              className="max-h-65 sm:w-1/2 cursor-pointer rounded-xl object-cover"
               src={room.images[0]}
               title="view room details"
             />
@@ -52,7 +143,7 @@ function Hotels() {
               <h2
                 className="text-2xl cursor-pointer"
                 onClick={() => {
-                  navigaiteTo(`/hotels/${room._id}`);
+                  navigateTo(`/rooms/${room._id}`);
                   scrollTo(0, 0);
                 }}
               >
@@ -96,115 +187,63 @@ function Hotels() {
               {Show ? "Hide" : "Show"}
             </button>
           ) : (
-            <p className="text-gray-500 text-[15px]">CLEAR</p>
+            <p className="text-gray-500 text-[15px] cursor-pointer" onClick={clearFilter}>
+              CLEAR
+            </p>
           )}
         </div>
         {(Show || !size) && (
-          <div className="">
+          <div>
             <div className="p-4">
               <h2 className="text-[21px] font-light mb-3">Popular filters</h2>
               <div className="flex flex-col gap-1 text-gray-500">
-                <label htmlFor="single bed">
-                  <input
-                    type="checkbox"
-                    id="single bed"
-                    className="mr-2 cursor-pointer"
-                  />
-                  Single Bed
-                </label>
-                <label htmlFor="double bed">
-                  <input
-                    type="checkbox"
-                    id="double bed"
-                    className="mr-2 cursor-pointer"
-                  />
-                  Double Bed
-                </label>
-                <label htmlFor="luxury room">
-                  <input
-                    type="checkbox"
-                    id="luxury room"
-                    className="mr-2 cursor-pointer"
-                  />
-                  Luxury Room
-                </label>
-                <label htmlFor="family suite">
-                  <input
-                    type="checkbox"
-                    id="family suite"
-                    className="mr-2 cursor-pointer"
-                  />
-                  Family Suite
-                </label>
+                {roomTypes.map((room, i) => (
+                  <label htmlFor={room} key={i}>
+                    <input
+                      type="checkbox"
+                      id={room}
+                      className="mr-2 cursor-pointer"
+                      checked={selectedFilters.roomType.includes(room)}
+                      onChange={(e)=>handleFilterChange(e.target.checked,room,"roomType")}
+                    />
+                    {room}
+                  </label>
+                ))}
               </div>
             </div>
             <div className="p-4">
               <h2 className="text-[21px] font-light mb-3">Price Range</h2>
               <div className="flex flex-col gap-1 text-gray-500">
-                <label htmlFor="0 to 500">
-                  <input
-                    type="checkbox"
-                    id="0 to 500"
-                    className="mr-2 cursor-pointer"
-                  />
-                  $ 0 to 500
-                </label>
-                <label htmlFor="500 to 1000">
-                  <input
-                    type="checkbox"
-                    id="500 to 1000"
-                    className="mr-2 cursor-pointer"
-                  />
-                  $ 500 to 1000
-                </label>
-                <label htmlFor="1000 to 2000">
-                  <input
-                    type="checkbox"
-                    id="1000 to 2000"
-                    className="mr-2 cursor-pointer"
-                  />
-                  $ 1000 to 2000
-                </label>
-                <label htmlFor="2000 to 3000">
-                  <input
-                    type="checkbox"
-                    id="2000 to 3000"
-                    className="mr-2 cursor-pointer"
-                  />
-                  $ 2000 to 3000
-                </label>
+                {priceRange.map((range, i) => (
+                  <label htmlFor={range} key={i}>
+                    <input
+                      type="checkbox"
+                      id={range}
+                      className="mr-2 cursor-pointer"
+                      checked={selectedFilters.priceRange.includes(range)}
+                      onChange={(e)=>handleFilterChange(e.target.checked,range,"priceRange")}
+                    />
+                    {range}
+                  </label>
+                ))}
               </div>
             </div>
             <div className="p-4">
               <h2 className="text-[21px] font-light mb-3">Sort By</h2>
               <div className="flex flex-col gap-1 text-gray-500">
-                <label htmlFor="low to high">
-                  <input
-                    type="radio"
-                    id="low to high"
-                    name="radio"
-                    className="mr-2 cursor-pointer"
-                  />
-                  Price Low to High
-                </label>
-                <label htmlFor="high to low">
-                  <input
-                    type="radio"
-                    id="high to low"
-                    name="radio"
-                    className="mr-2 cursor-pointer"
-                  />
-                  Price High to Low
-                </label>
-                <label htmlFor="newest first">
-                  <input
-                    type="radio"
-                    id="newest first"
-                    name="radio"
-                    className="mr-2 cursor-pointer"
-                  />
-                  Newest First
-                </label>
+                {priceCategory.map((category, i) => (
+                  <label htmlFor={category} key={i}>
+                    <input
+                      type="radio"
+                      id={category}
+                      name="radio"
+                      className="mr-2 cursor-pointer"
+                      checked={selectedSort===category}
+                      onChange={e=>handleSortChange(category)}
+                    />
+                    {category}
+                  </label>
+                ))}
               </div>
             </div>
           </div>

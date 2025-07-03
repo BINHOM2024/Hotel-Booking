@@ -1,28 +1,78 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import {
-  assets,
-  facilityIcons,
-  roomCommonData,
-  roomsDummyData,
-} from "../assets/assets";
+import { assets, facilityIcons, roomCommonData } from "../assets/assets";
+import { useContextCreator } from "../context/StoreContext";
 
 const RoomDetails = () => {
   const { id } = useParams();
+  const { axios, navigateTo, rooms, getToken, toast } = useContextCreator();
   const [room, setRoom] = useState(null);
   const [singleRoom, setSingleRoom] = useState(null);
+  const [checkInDate, setCheckInDate] = useState(null);
+  const [checkOutDate, setCheckOutDate] = useState(null);
+  const [guests, setGuests] = useState(1);
+  const [isAvailable, setIsAvailable] = useState(false);
 
-  const formValues = [
-    { name: "Check-In", type: "date" },
-    { name: "Check-Out", type: "date" },
-    { name: "Guests", type: "number" },
-  ];
+  const checkRoomAvailability = async () => {
+    try {
+      if (checkInDate >= checkOutDate)
+        return toast.error("Check-In date should be less than Check-Out date");
+      const { data } = await axios.post("/api/bookings/check-availability", {
+        room: id,
+        checkInDate,
+        checkOutDate,
+      });
+      if (data.success) {
+        if (data.isAvailable) {
+          setIsAvailable(true);
+          toast.success("Room is available");
+        } else {
+          setIsAvailable(false);
+          toast.error("Room is not available");
+        }
+      } else {
+        toast.error(data.message);
+      }
+    } catch (error) {
+      toast.error(error.message);
+    }
+  };
+
+  const onSubmitHandler = async (e) => {
+    try {
+      e.preventDefault();
+      if (!isAvailable) {
+        checkRoomAvailability();
+      } else {
+        const { data } = await axios.post(
+          "/api/bookings/book",
+          {
+            room: id,
+            checkInDate,
+            checkOutDate,
+            guests,
+            paymentMethod: "Pay At Hotel",
+          },
+          { headers: { Authorization: `Bearer ${await getToken()}` } }
+        );
+        if (data.success) {
+          toast.success(data.message);
+          navigateTo("/my-bookings");
+          scrollTo(0, 0);
+        } else {
+          toast.error(data.message);
+        }
+      }
+    } catch (error) {
+      toast.error(error.message);
+    }
+  };
 
   useEffect(() => {
-    const room = roomsDummyData.find((rooms) => rooms._id === id);
+    const room = rooms.find((rooms) => rooms._id === id);
     room && setRoom(room);
     room && setSingleRoom(room.images[0]);
-  }, [id]);
+  }, [rooms]);
 
   return (
     room && (
@@ -38,7 +88,11 @@ const RoomDetails = () => {
           <p>{room.hotel.address}</p>
         </div>
         <div className="grid md:grid-cols-2 w-[90%] gap-4 md:gap-8">
-          <img className=" rounded-2xl" src={singleRoom} alt="" />
+          <img
+            src={singleRoom}
+            alt=""
+            className=" cursor-pointer rounded-xl object-cover"
+          />
           <div className="grid grid-cols-2 gap-4 ">
             {room.images.length > 1 &&
               room.images.map((image, i) => (
@@ -54,7 +108,7 @@ const RoomDetails = () => {
               ))}
           </div>
         </div>
-        <div className="flex items-center justify-between text-2xl mt-8">
+        <div className="flex items-center justify-between text-2xl mt-8 w-[90%]">
           <h2>Experience Luxury Like Never Before</h2>
           <p className="hidden md:block">${room.pricePerNight}/Night</p>
         </div>
@@ -69,29 +123,51 @@ const RoomDetails = () => {
             </div>
           ))}
         </div>
-        <form className="flex flex-col md:flex-row gap-4 md:gap-2 sm:justify-between mt-10 mx-16 sm:mx-0 md:mx-4 px-8 py-8 text-gray-500 rounded-2xl bg-white shadow-[0px_0px_10px_rgba(0,0,0,0.6)]">
+        <form
+          onSubmit={onSubmitHandler}
+          className="flex flex-col md:flex-row gap-4 md:gap-2 sm:justify-between mt-10 mx-16 sm:mx-0 md:mx-4 px-8 py-8 text-gray-500 rounded-2xl bg-white shadow-[0px_0px_10px_rgba(0,0,0,0.6)]"
+        >
           <div className="flex flex-col sm:flex-row gap-3 sm:gap-8">
-            {formValues.map((value, i) => (
-              <div className="flex flex-col" key={i}>
-                <label htmlFor={value.name}>{value.name}</label>
-                <input
-                  type={value.type}
-                  id={value.name}
-                  className={`border-2 rounded  outline-0 p-1 ${
-                    value.type === "number" && "w-16"
-                  }`}
-                  placeholder={`${value.type === "number" && "0"}`}
-                />
-              </div>
-            ))}
+            <div className="flex flex-col">
+              <label htmlFor="checkInDate">CheckInDate</label>
+              <input
+                onChange={(e) => setCheckInDate(e.target.value)}
+                min={new Date().toISOString().split("T")[0]}
+                type="date"
+                id="checkInDate"
+                className={`border-2 rounded  outline-0 p-1`}
+              />
+            </div>
+            <div className="flex flex-col">
+              <label htmlFor="checkOutDate">checkOutDate</label>
+              <input
+                onChange={(e) => setCheckOutDate(e.target.value)}
+                min={checkInDate}
+                disabled={!checkInDate}
+                type="date"
+                id="checkOutDate"
+                className={`border-2 rounded  outline-0 p-1`}
+              />
+            </div>
+            <div className="flex flex-col">
+              <label htmlFor="Guests">Guests</label>
+              <input
+                value={guests}
+                onChange={(e) => setGuests(e.target.value)}
+                type="number"
+                id="Guests"
+                className={`border-2 rounded  outline-0 p-1 w-20`}
+                placeholder="1"
+              />
+            </div>
           </div>
           <button className="text-white bg-blue-500 px-6 rounded place-self-center py-2.5">
-            Check Availability
+            {isAvailable ? "Book Now" : "Check Availability"}
           </button>
         </form>
         <div className="my-12 flex flex-col gap-4">
           {roomCommonData.map((room, i) => (
-            <div className="flex gap-2 items-start">
+            <div className="flex gap-2 items-start" key={i}>
               <img src={room.icon} alt="" />
               <div>
                 <p>{room.title}</p>

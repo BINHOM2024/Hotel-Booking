@@ -1,7 +1,53 @@
-import  { useState } from "react";
-import { assets, userBookingsDummyData } from "../assets/assets";
+import { useEffect, useState } from "react";
+import { assets } from "../assets/assets";
+import { useContextCreator } from "../context/StoreContext";
+
 const MyBooking = () => {
-  const [bookings, setBookings] = useState(userBookingsDummyData);
+  const { axios, toast, navigateTo, user, getToken } = useContextCreator();
+  const [bookings, setBookings] = useState([]);
+
+  const fetchUserBookings = async () => {
+    try {
+      const { data } = await axios.get("/api/bookings/user", {
+        headers: { Authorization: `Bearer ${await getToken()}` },
+      });
+      if (data.success) {
+        setBookings(data.bookings);
+      } else {
+        toast.error(data.message);
+      }
+    } catch (error) {
+      toast.error(error.message);
+    }
+  };
+
+  const handlePayment = async (bookingId) => {
+    try {
+      const { data } = await axios.post(
+        "/api/bookings/stripe-payment",
+        { bookingId },
+        { headers: { Authorization: `Bearer ${await getToken()}` } }
+      );
+      console.log("first")
+      if (data.success) {
+        console.log(window.location.href)
+        window.location.href = data.url;
+      } else {
+        console.log("second")
+        toast.error(data.message);
+      }
+    } catch (error) {
+      console.log("third")
+      toast.error(error.message);
+    }
+  };
+
+  useEffect(() => {
+    if (user) {
+      fetchUserBookings();
+    }
+  }, [user]);
+
   return (
     <div className="mt-36 mb-20 m-auto w-[80%]">
       <h1 className="text-3xl font-black">My Bookings</h1>
@@ -21,11 +67,14 @@ const MyBooking = () => {
             key={booking._id}
           >
             <div className="flex flex-col md:flex-row gap-6">
-              <img src={booking.room.images[0]} className=" sm:w-[200px] md:w-[150px]" />
+              <img
+                src={booking.room.images[0]}
+                className=" sm:w-[200px] md:w-[150px]"
+              />
               <div className="text-gray-900 grid gap-1.5">
-                <p className="text-2xl text-black">
+                <p className="text-l text-black font-black">
                   {booking.hotel.name}
-                  <span className="text-sm ml-2">
+                  <span className="text-sm ml-2 font-light">
                     ({booking.room.roomType})
                   </span>
                 </p>
@@ -37,7 +86,7 @@ const MyBooking = () => {
                   <img src={assets.guestsIcon} alt="" />
                   <p>Guests: {booking.guests}</p>
                 </div>
-                <p className=" text-black">Total: ${booking.totalPrice}</p>
+                <p className=" text-black">Total: $ {booking.totalPrice}</p>
               </div>
             </div>
             <div>
@@ -50,7 +99,7 @@ const MyBooking = () => {
               <p>
                 CheckOut:
                 <span className="text-gray-900 text-[12px] ml-2 font-light">
-                  {new Date(booking.checkInDate).toDateString()}
+                  {new Date(booking.checkOutDate).toDateString()}
                 </span>
               </p>
             </div>
@@ -68,7 +117,10 @@ const MyBooking = () => {
                 >{`${booking.isPaid ? "Paid" : "Unpaid"}`}</p>
               </div>
               {!booking.isPaid && (
-                <button className="border rounded-full py-1 px-2 text-[12px] place-self-start">
+                <button
+                  onClick={() => handlePayment(booking._id)}
+                  className="border rounded-full py-1 px-2 text-[12px] place-self-start"
+                >
                   Pay Now
                 </button>
               )}

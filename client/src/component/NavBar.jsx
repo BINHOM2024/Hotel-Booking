@@ -1,7 +1,8 @@
-import React, { useEffect, useState } from "react";
+import  { useEffect, useState } from "react";
 import { assets } from "../assets/assets";
-import { Link, useNavigate,useLocation } from "react-router-dom";
-import { useClerk, useUser, UserButton } from "@clerk/clerk-react";
+import { Link,useLocation } from "react-router-dom";
+import { useClerk,UserButton } from "@clerk/clerk-react";
+import { useContextCreator } from "../context/StoreContext";
 
 const BookIcon = () => (
   <svg
@@ -23,19 +24,22 @@ const BookIcon = () => (
   </svg>
 );
 const NavBar = () => {
-  const navigaiteTo = useNavigate();
+  
+  const {
+   navigateTo,user,isOwner,SetShowHotelReg} = useContextCreator();
   const location = useLocation();
+ const [isScrolled, setIsScrolled] =useState(false);
+  const [isMenuOpen, setIsMenuOpen] =useState(false);
+  const { openSignIn } = useClerk();
+
   const navLinks = [
     { name: "Home", path: "/" },
-    { name: "Hotel", path: "/hotels" },
+    { name: "Hotel", path: "/rooms" },
     { name: "Experience", path: "/experience" },
     { name: "About", path: "/about" },
   ];
 
-  const [isScrolled, setIsScrolled] =useState(false);
-  const [isMenuOpen, setIsMenuOpen] =useState(false);
-  const { openSignIn } = useClerk();
-  const { user } = useUser();
+ 
 
   useEffect(() => {    
     const handleScroll = () => {
@@ -80,16 +84,23 @@ const NavBar = () => {
             {link.name}
           </Link>
         ))}
-        <button
-          onClick={() => navigaiteTo("/owner")}
-          className={`border px-4 py-1 text-sm font-light rounded-full cursor-pointer ${
-            isScrolled
-              ? "text-black"
-              : ` ${location.pathname !== "/" ? "text-gray-700" : "text-white"}`
-          } transition-all`}
-        >
-          Dashboard
-        </button>
+
+        {user && (
+          <button
+            onClick={() =>
+              isOwner ? navigateTo("/owner") : SetShowHotelReg(true)
+            }
+            className={`border px-4 py-1 text-sm font-light rounded-full cursor-pointer ${
+              isScrolled
+                ? "text-black"
+                : ` ${
+                    location.pathname !== "/" ? "text-gray-700" : "text-white"
+                  }`
+            } transition-all`}
+          >
+            {isOwner ? "Dashboard" : "List Your Hotel"}
+          </button>
+        )}
       </div>
 
       {/* Desktop Right */}
@@ -109,7 +120,7 @@ const NavBar = () => {
               <UserButton.Action
                 label="My bookings"
                 labelIcon={<BookIcon />}
-                onClick={() => navigaiteTo("/my-bookings")}
+                onClick={() => navigateTo("/my-bookings")}
               />
             </UserButton.MenuItems>
           </UserButton>
@@ -132,7 +143,7 @@ const NavBar = () => {
               <UserButton.Action
                 label="My bookings"
                 labelIcon={<BookIcon />}
-                onClick={() => navigaiteTo("/my-bookings")}
+                onClick={() => navigateTo("/my-bookings")}
               />
             </UserButton.MenuItems>
           </UserButton>
@@ -141,7 +152,11 @@ const NavBar = () => {
           onClick={() => setIsMenuOpen(!isMenuOpen)}
           src={assets.menuIcon}
           alt="menuIcon"
-          className={`${isScrolled ? "invert":`${location.pathname !== "/" && "invert opacity-70"}`} h-4 cursor-pointer`}
+          className={`${
+            isScrolled
+              ? "invert"
+              : `${location.pathname !== "/" && "invert opacity-70"}`
+          } h-4 cursor-pointer`}
         />
       </div>
 
@@ -165,10 +180,12 @@ const NavBar = () => {
         ))}
         {user && (
           <button
-            onClick={() => navigaiteTo("/owner")}
+            onClick={() =>
+              isOwner ? navigateTo("/owner") : SetShowHotelReg(true)
+            }
             className="border px-4 py-1 text-sm font-light rounded-full cursor-pointer transition-all"
           >
-            Dashboard
+            {isOwner ? "Dashboard" : "List Your Hotel"}
           </button>
         )}
 
