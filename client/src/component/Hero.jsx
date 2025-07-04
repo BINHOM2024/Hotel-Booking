@@ -1,6 +1,7 @@
 import  { useState } from "react";
 import { assets, cities } from "../assets/assets";
 import { useContextCreator } from "../context/StoreContext";
+import heroImage from "../assets/heroImage.png";
 
 const Hero = () => {
   const {  navigateTo } = useContextCreator()
@@ -12,7 +13,7 @@ const Hero = () => {
     
   }
   return (
-    <div className="flex flex-col items-start justify-center px-6 md:px-14 lg:px-24 xl:px-32 text-white  bg-[url('src/assets/heroImage.png')] bg-cover bg-center bg-no-repeat h-screen">
+    <div className="flex flex-col items-start justify-center px-6 md:px-14 lg:px-24 xl:px-32 text-white bg-cover bg-center bg-no-repeat h-screen" style={{backgroundImage:`url(${heroImage})`}}>
       <p className="bg-[#49B9FF]/50  rounded-full px-3 py-1 ">
         The Ultimate Hotel Experience
       </p>
