@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import  { useEffect } from 'react'
 import { useContextCreator } from '../context/StoreContext'
 import { useParams } from 'react-router-dom'
 
@@ -10,7 +10,7 @@ useEffect(() => {
     if (nextUrl) {
      setTimeout(() => {
         navigateTo(`/${nextUrl}`)
-     }, 8000);
+     }, 5000);
  }
 }, [nextUrl])
 

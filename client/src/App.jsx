@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+
 import Home from "./pages/Home";
 import { Route, Routes } from "react-router-dom";
 import Footer from "./component/Footer";
@@ -14,10 +14,12 @@ import ListRoom from "./component/hotelOwner/ListRoom";
 import { ToastContainer } from "react-toastify"
 import { useContextCreator } from "./context/StoreContext";
 import Loader from "./component/Loader";
+import About from "./pages/About";
+import Experience from "./pages/Experience";
 
 
 const App = () => {
-  //const [isHotelReg, setIsHotelReg] = useState(false)
+ 
   const isOwnerPath = window.location.pathname.includes("owner");
   const {showHotelReg}=useContextCreator()
   return (
@@ -28,6 +30,8 @@ const App = () => {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/rooms" element={<Hotels />} />
+        <Route path="/about" element={<About />} />
+        <Route path="/experience" element={<Experience />} />
         <Route path="/rooms/:id" element={<RoomDetails />} />
         <Route path="/my-bookings" element={<MyBooking />} />
         <Route path="/loader/:nextUrl" element={<Loader />} />

@@ -3,7 +3,7 @@ import { assets } from "../assets/assets";
 import { useContextCreator } from "../context/StoreContext";
 
 const MyBooking = () => {
-  const { axios, toast, navigateTo, user, getToken } = useContextCreator();
+  const { axios, toast, user, getToken } = useContextCreator();
   const [bookings, setBookings] = useState([]);
 
   const fetchUserBookings = async () => {

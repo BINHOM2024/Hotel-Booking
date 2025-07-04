@@ -1,6 +1,11 @@
 
 import { assets } from "../assets/assets";
 const Footer = () => {
+  const companyInfo = ["About", "Careers", "Press", "Blog", "Partners"]
+  const support = ["Help Center", "Safety Information", "Cancellation Options", "Contact Us", "Accessibility"]
+  const icons = [
+    { name: assets.instagramIcon }, { name: assets.facebookIcon }, { name: assets.twitterIcon }, { name: assets.linkendinIcon }
+  ]
   return (
     <div className="bg-gray-300 text-gray-500">
       <div className="w-[90%] m-auto">
@@ -12,30 +17,27 @@ const Footer = () => {
               boutique hotels to luxury villas and private islands.
             </p>
             <div className="flex gap-8">
-              <img src={assets.instagramIcon} />
-              <img src={assets.facebookIcon} />
-              <img src={assets.twitterIcon} />
-              <img src={assets.linkendinIcon} />
+              {icons.map((icon, i) => (
+                <img src={icon.name} alt="" key={i} className="cursor-pointer"/>
+              ))}
             </div>
           </div>
           <div>
             <h2 className="text-black font-bold pb-2">COMPANY</h2>
             <div className="flex flex-col">
-              <a href="">About</a>
-              <a href="">Careers</a>
-              <a href="">Press</a>
-              <a href="">Blog</a>
-              <a href="">Partners</a>
+              {companyInfo.map((info, i) => (
+                <a href="" key={i}>
+                  {info}
+                </a>
+              ))}
             </div>
           </div>
           <div>
             <h2 className="text-black font-bold pb-2">SUPPORT</h2>
             <div className="flex flex-col">
-              <a href="">Help Center</a>
-              <a href="">Safety Information</a>
-              <a href="">Cancellation Options</a>
-              <a href="">Contact Us</a>
-              <a href="">Accessibility</a>
+              {support.map((sup, i) => (
+                <a href="" key={i}>{ sup}</a>
+              ))}
             </div>
           </div>
           <div>

@@ -21,7 +21,6 @@ const Dashboard = () => {
         headers: { Authorization: `Bearer ${await getToken()}` },
       });
       if (data.success) {
-        console.log(data)
         setDashboard(data.dashboardData);
       } else {
         toast.error(data.message)
@@ -37,7 +36,6 @@ useEffect(() => {
  }
 }, [user])
 
-console.log(dashboard)
   return (
     <div className="px-2 sm:px-0">
       <h1 className="text-3xl mb-3">Dashboard</h1>

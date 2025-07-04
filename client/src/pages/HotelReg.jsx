@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { assets, cities } from "../assets/assets";
 import { useContextCreator } from "../context/StoreContext";
-//import axios from "axios";
 import { toast } from "react-toastify";
 
 const HotelReg = () => {

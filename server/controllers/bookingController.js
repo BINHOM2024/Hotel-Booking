@@ -35,7 +35,7 @@ export const checkAvailabilityAPI = async (req, res) => {
 export const createBooking = async (req, res) => {
   try {
     const user = req.user._id;
-    const { room, checkInDate, checkOutDate ,guests,paymentMethod} = req.body;
+    const { room, checkInDate, checkOutDate, guests} = req.body;
     const isAvailable = await checkAvailability({
       checkInDate,
       checkOutDate,
@@ -50,7 +50,7 @@ export const createBooking = async (req, res) => {
     const timeDiff = checkOut.getTime() - checkIn.getTime();
     const nights = Math.ceil(timeDiff / (1000 * 3600 * 24));
     totalPrice *= nights;
-   const booking= await bookingModel.create({
+    const booking = await bookingModel.create({
       user,
       room,
       hotel: roomData.hotel._id,
@@ -59,7 +59,7 @@ export const createBooking = async (req, res) => {
       checkOutDate,
       totalPrice,
     });
- 
+
     const mailOptions = {
       from: process.env.EMAIL_USERNAME,
       to: req.user.email,
@@ -106,16 +106,13 @@ export const getUserBooking = async (req, res) => {
 };
 
 export const getHotelBookings = async (req, res) => {
-  
   try {
     const hotel = await hotelModel.findOne({ owner: req.user._id });
     if (!hotel) return res.json({ success: false, message: "No hotel found" });
-    console.log(hotel)
     const bookings = await bookingModel
       .find({ hotel: hotel._id })
       .populate("room hotel user")
       .sort({ createdAt: -1 });
-    console.log(bookings)
     const totalBookings = bookings.length;
     const totalRevenue = bookings.reduce(
       (acc, booking) => acc + booking.totalPrice,
@@ -164,6 +161,6 @@ export const stripePayment = async (req, res) => {
     });
     res.json({ success: true, url: session.url });
   } catch (error) {
-    res.json({ success: false, message:"Payment Failed" });
+    res.json({ success: false, message: "Payment Failed" });
   }
 };

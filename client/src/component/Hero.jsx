@@ -1,9 +1,9 @@
-import React, { useState } from "react";
+import  { useState } from "react";
 import { assets, cities } from "../assets/assets";
 import { useContextCreator } from "../context/StoreContext";
 
 const Hero = () => {
-  const { axios, navigateTo, getToken } = useContextCreator()
+  const {  navigateTo } = useContextCreator()
   const [destination, setDestination] = useState("")
 
   const onSearch = async (e) => {

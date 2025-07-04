@@ -1,7 +1,7 @@
-import  { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { assets } from "../assets/assets";
-import { Link,useLocation } from "react-router-dom";
-import { useClerk,UserButton } from "@clerk/clerk-react";
+import { Link, useLocation } from "react-router-dom";
+import { useClerk, UserButton } from "@clerk/clerk-react";
 import { useContextCreator } from "../context/StoreContext";
 
 const BookIcon = () => (
@@ -24,12 +24,10 @@ const BookIcon = () => (
   </svg>
 );
 const NavBar = () => {
-  
-  const {
-   navigateTo,user,isOwner,SetShowHotelReg} = useContextCreator();
+  const { navigateTo, user, isOwner, SetShowHotelReg } = useContextCreator();
   const location = useLocation();
- const [isScrolled, setIsScrolled] =useState(false);
-  const [isMenuOpen, setIsMenuOpen] =useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { openSignIn } = useClerk();
 
   const navLinks = [
@@ -39,9 +37,7 @@ const NavBar = () => {
     { name: "About", path: "/about" },
   ];
 
- 
-
-  useEffect(() => {    
+  useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 10);
     };
