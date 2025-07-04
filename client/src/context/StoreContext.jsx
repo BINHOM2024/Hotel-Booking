@@ -23,7 +23,7 @@ export const AppContextProvider = ({ children }) => {
         } else {
           setTimeout(() => {
             fetchUser();
-          }, 5000);
+          }, 3000);
         }
     } catch (error) {
       toast.error(error.message)  

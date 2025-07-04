@@ -21,6 +21,7 @@ const Dashboard = () => {
         headers: { Authorization: `Bearer ${await getToken()}` },
       });
       if (data.success) {
+        console.log(data)
         setDashboard(data.dashboardData);
       } else {
         toast.error(data.message)
@@ -36,7 +37,7 @@ useEffect(() => {
  }
 }, [user])
 
-
+console.log(dashboard)
   return (
     <div className="px-2 sm:px-0">
       <h1 className="text-3xl mb-3">Dashboard</h1>
@@ -72,7 +73,7 @@ useEffect(() => {
             key={item._id}
             className="grid items-center grid-cols-4 text-gray-400  border-b-2 border-gray-300 p-1"
           >
-            <p>{item.user.username}</p>
+            <p>{item.user.userName}</p>
             <p>{item.room.roomType}</p>
             <p>$ {item.totalPrice}</p>
             <button

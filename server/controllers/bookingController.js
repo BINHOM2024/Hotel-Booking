@@ -106,13 +106,16 @@ export const getUserBooking = async (req, res) => {
 };
 
 export const getHotelBookings = async (req, res) => {
+  
   try {
-    const hotel = await hotelModel({ owner: req.auth().userId });
+    const hotel = await hotelModel.findOne({ owner: req.user._id });
     if (!hotel) return res.json({ success: false, message: "No hotel found" });
+    console.log(hotel)
     const bookings = await bookingModel
       .find({ hotel: hotel._id })
       .populate("room hotel user")
       .sort({ createdAt: -1 });
+    console.log(bookings)
     const totalBookings = bookings.length;
     const totalRevenue = bookings.reduce(
       (acc, booking) => acc + booking.totalPrice,

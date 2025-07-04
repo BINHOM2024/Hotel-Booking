@@ -2,7 +2,6 @@ import express from "express"
 import { checkAvailabilityAPI, createBooking, getHotelBookings, getUserBooking, stripePayment } from "../controllers/bookingController.js"
 import userAuth from "../middleware/userAuth.js"
 
-
 const bookingRouter = express.Router()
 
 bookingRouter.post("/check-availability",checkAvailabilityAPI)
