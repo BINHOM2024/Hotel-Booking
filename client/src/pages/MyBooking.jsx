@@ -28,16 +28,12 @@ const MyBooking = () => {
         { bookingId },
         { headers: { Authorization: `Bearer ${await getToken()}` } }
       );
-      console.log("first")
       if (data.success) {
-        console.log(window.location.href)
         window.location.href = data.url;
       } else {
-        console.log("second")
         toast.error(data.message);
       }
     } catch (error) {
-      console.log("third")
       toast.error(error.message);
     }
   };

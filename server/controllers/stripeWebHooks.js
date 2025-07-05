@@ -1,3 +1,4 @@
+
 import Stripe from "stripe";
 import bookingModel from "../models/booking.js";
 
@@ -16,6 +17,8 @@ export default async function stripeWebHooks(req, res) {
     console.error("Webhook signature verification failed:", error.message);
     return res.status(400).send(`Webhook Error: ${error.message}`);
   }
+
+ 
   if (event.type === "payment_intent.succeeded") {
     const payment_intent = event.data.object;
     const payment_intentId = payment_intent.id;
@@ -26,26 +29,50 @@ export default async function stripeWebHooks(req, res) {
       });
 
       if (!sessionList.data || sessionList.data.length === 0) {
-        console.error(
-          "No checkout session found for payment_intent:",
-          payment_intentId
-        );
+        console.error("No checkout session found for payment_intent:", payment_intentId);
         return res.status(404).send("No associated checkout session found.");
       }
 
       const { bookingId } = sessionList.data[0].metadata;
 
       await bookingModel.findByIdAndUpdate(bookingId, {
+        status: "confirmed",
         isPaid: true,
         paymentMethod: "Stripe",
       });
-
-      console.log(`Booking ${bookingId} marked as paid.`);
     } catch (err) {
-      console.error("Error updating booking:", err);
+      console.error("Error updating booking for succeeded payment:", err);
       return res.status(500).send("Internal server error");
     }
-  } else {
+  }
+
+  else if (event.type === "payment_intent.canceled") {
+    const payment_intent = event.data.object;
+    const payment_intentId = payment_intent.id;
+
+    try {
+      const sessionList = await stripeInstance.checkout.sessions.list({
+        payment_intent: payment_intentId,
+      });
+
+      if (!sessionList.data || sessionList.data.length === 0) {
+        console.error("No checkout session found for failed/canceled payment_intent:", payment_intentId);
+        return res.status(404).send("No associated checkout session found.");
+      }
+
+      const { bookingId } = sessionList.data[0].metadata;
+
+      await bookingModel.findByIdAndUpdate(bookingId, {
+        status: "cancelled",
+        isPaid: false,
+        paymentMethod: "Stripe",
+      });
+    } catch (err) {
+      console.error("Error updating booking for failed/canceled payment:", err);
+      return res.status(500).send("Internal server error");
+    }
+  }
+  else {
     console.log("Unhandled event type:", event.type);
   }
 
